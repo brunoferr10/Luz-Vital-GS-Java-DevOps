@@ -1,8 +1,10 @@
-# Luz Vital · Mind-Dev
+# Luz Vital · DevOps Tools & Cloud Computing
 
-**Quando a luz cai, o socorro chega primeiro a quem tem menos bateria.**
+**Global Solution 2026/2 · CitizenTech · Grupo Mind-Dev · 2TDS**
 
-Backend Java da CitizenTech Luz Vital — Global Solution FIAP 2026/2, turma 2TDS. Organiza pacientes eletrodependentes, seus aparelhos e ocorrências de falta de energia; oferece ao gestor uma fila pela autonomia restante e gera um plano logístico com Spring AI.
+Este repositório contém a entrega de **DevOps Tools & Cloud Computing**: provisionamento em nuvem com Azure CLI, rastreabilidade no Azure Boards/Repos, proteção da branch principal, integração contínua com testes e artefatos e deploy automático por uma pipeline de Release.
+
+A aplicação Java Luz Vital é a carga de trabalho usada para comprovar esse fluxo. Ela gerencia pacientes eletrodependentes, aparelhos e ocorrências de falta de energia. Os requisitos da disciplina de Java foram usados como referência para construir a aplicação; o objetivo desta entrega é demonstrar sua **construção, teste, publicação e operação em nuvem com Azure DevOps**.
 
 ## Equipe
 
@@ -14,193 +16,126 @@ Backend Java da CitizenTech Luz Vital — Global Solution FIAP 2026/2, turma 2TD
 | Nicolas Monteiro Ramiro | 562380 |
 | Marcus Vinícius Vila Nova da Silva | 558771 |
 
-## Comece por aqui
+## Fluxo da entrega DevOps
 
-1. Leia [INICIO-AQUI.md](INICIO-AQUI.md) para subir os arquivos no Git e executar localmente.
-2. Siga [o guia Azure e VM](docs/AZURE-E-VM.md) para provisionar os recursos.
-3. Configure [Boards, Repos e Pipelines](docs/AZURE-DEVOPS.md).
-4. Importe a coleção [Postman](postman/Luz-Vital.postman_collection.json) e o [ambiente](postman/Luz-Vital.postman_environment.json).
-5. Use [o roteiro de vídeo](docs/ROTEIRO-VIDEO.md) e [a matriz dos requisitos](docs/REQUISITOS.md).
-6. Consulte [a validação executada](docs/VALIDACAO.md) e [a explicação das classes Java](docs/APRESENTACAO-JAVA.md).
+1. Criar os recursos de nuvem por scripts Azure CLI versionados.
+2. Criar uma tarefa no Azure Boards e uma branch vinculada.
+3. Alterar código Java e fazer commit associado ao Work Item.
+4. Abrir PR para `main`, cumprir revisão e concluir o merge.
+5. Disparar automaticamente a CI: compilar, testar e publicar o pacote.
+6. Disparar automaticamente a Release a partir do artefato da CI.
+7. Comprovar a alteração publicada e executar CRUDs com SELECT no banco em nuvem.
+8. Concluir a tarefa com os vínculos de branch, commits e PR.
 
-**O pacote contém código e configuração. Recursos Azure, credenciais, convite ao professor, repositórios remotos, execução real do LLM/broker em nuvem, integração no app Mobile e gravação são etapas externas a executar.** Não há URLs de implantação ou evidências inventadas.
+## Arquitetura macro DevOps
 
-## Problema e proposta
-
-Pessoas que usam equipamentos elétricos para suporte à vida podem ficar vulneráveis em apagões. O Luz Vital centraliza o cadastro e registra o instante declarado da queda, usando a menor autonomia informada entre os aparelhos para ordenar ocorrências abertas. No empate em minutos, pacientes com ventilador vêm primeiro, seguidos do instante de abertura. Essa é uma regra de protótipo que precisa de validação profissional; não é triagem clínica.
-
-A fila é recalculada em cada consulta. O contador nunca fica negativo. Autonomia zero representa necessidade imediata de atenção. Os valores são declarados, não medidos por telemetria, e ficam congelados na abertura: editar um aparelho depois não altera o histórico daquela ocorrência. O plano de IA é preventivo/logístico e precisa ser revisado pela equipe responsável. O sistema não garante socorro e não substitui 192/193.
-
-## Escopo implementado
-
-- CRUD paginado de **usuários, pacientes, aparelhos e ocorrências**; três entidades centrais relacionadas, além da conta de acesso.
-- DTOs, Bean Validation, erros padronizados com `@RestControllerAdvice` e códigos HTTP.
-- Spring Security com JWT HS256 e papéis **CUIDADOR** e **GESTOR**; senha BCrypt; isolamento dos dados por cuidador.
-- Spring AI com `ChatClient`, LLM configurável e resposta estruturada; plano vinculado ao paciente, salvo no banco e recuperável pelo Mobile.
-- RabbitMQ: exchange durável, fila, publicação com confirmação, consumo assíncrono e fila de erros. Evento `energia.caiu`, sem dados pessoais na mensagem.
-- Flag de evento pendente persistida na ocorrência: novas tentativas quando o broker volta; processamento idempotente pelo consumidor.
-- Swagger/OpenAPI, health check, testes automáticos e cobertura JaCoCo.
-- Scripts Azure CLI, DDL Azure SQL, CI e Release em definições separadas.
-
-**Não implementado neste backend:** OCR da etiqueta, mapa/pontos voluntários, aplicativo Mobile completo, API .NET, MongoDB, notificações reais, plano offline no dispositivo e integrações com órgãos públicos. São partes do plano maior; não são apresentadas como funcionalidades concluídas. Há um adaptador de exemplo para o Mobile em `examples/mobile/`.
-
-## Arquitetura macro
-
-![Arquitetura Luz Vital](docs/arquitetura.svg)
+![Arquitetura DevOps Luz Vital](docs/arquitetura.svg)
 
 ```mermaid
 flowchart TD
-  M["App Mobile / Swagger"] -->|"HTTPS + JWT"| A["App Service · API Java"]
-  A -->|"JPA + TLS"| D["Azure SQL · 4 tabelas"]
-  A -->|"Spring AI · HTTPS"| L["LLM · Gemini compatível OpenAI"]
-  A -->|"energia.caiu"| R["RabbitMQ · VM Linux"]
-  R -->|"consumo assíncrono"| A
-  B["Boards + Repos · PR"] --> C["CI · testes + JAR"]
-  C -->|"artefato drop"| P["Release automática"]
-  P -->|"mesmo JAR"| A
+  T["Azure Boards · tarefa"] --> B["Azure Repos · branch + commit"]
+  B --> P["PR revisada · main protegida"]
+  P --> C["CI · build + testes JUnit"]
+  C --> A["Artefatos · JAR + SQL + testes"]
+  A --> R["Release automática · deploy + smoke test"]
+  R --> W["App Service · aplicação Java"]
+  W --> D["Azure SQL · persistência"]
+  W --> Q["VM Linux · RabbitMQ de apoio"]
+  S["Scripts Azure CLI"] --> W
+  S --> D
+  S --> Q
 ```
 
-A VM é apoio Linux e broker. **Aplicação no App Service e banco no Azure SQL**, conforme opções de hospedagem do enunciado. H2 é usado somente em desenvolvimento/testes. A comunicação AMQP da configuração acadêmica usa rede restrita por NSG e dados fictícios; não há TLS no broker dessa VM. Para uso real, configure AMQPS com certificado válido (`RABBIT_SSL=true`, porta 5671), regras compatíveis e rede privada; não coloque dados reais neste protótipo.
+A aplicação fica no **App Service** e o banco no **Azure SQL**, opções permitidas pelo enunciado. A VM Linux é usada como terminal de apoio e broker RabbitMQ. H2 serve somente aos testes/desenvolvimento e não é o banco da entrega.
 
-## Tecnologias e organização
+O broker usa volume persistente e AMQP restrito por NSG aos IPs de saída do App Service. O exemplo acadêmico não configura TLS no broker e deve usar dados fictícios. A API pública usa HTTPS e a conexão com Azure SQL usa TLS. Detalhes operacionais: [Azure e VM](docs/AZURE-E-VM.md).
 
-Java 17 · Spring Boot 3.5.15 · Spring Data JPA · Spring Security/OAuth2 Resource Server · Spring AI 1.1.8 · RabbitMQ · Maven · Azure SQL · H2 · OpenAPI · JUnit/MockMvc · JaCoCo.
+## Componentes e evidências
+
+| Componente | Implementação/evidência |
+|---|---|
+| Infraestrutura como código | Scripts Azure CLI em `/scripts` |
+| Versionamento | Projeto privado Git no Azure Repos |
+| Rastreabilidade | Tarefa, branch, commit `AB#ID` e PR vinculados |
+| Governança da main | Revisor obrigatório, Work Item obrigatório e revisor padrão identificado com RM |
+| CI | `azure-pipeline.yml`, acionada pela atualização protegida da main após merge |
+| Testes | JUnit/MockMvc, resultados em Tests e cobertura JaCoCo |
+| Artefatos | `drop`: JAR e SQL; `testes-junit`: relatórios |
+| Release | `azure-release.yml`, disparada pela conclusão bem-sucedida da CI |
+| Deploy | Mesmo JAR publicado pela CI, sem recompilar na Release |
+| Validação pós-deploy | Smoke test HTTPS de saúde e versão |
+| Banco | Azure SQL; DDL em `scripts/script-bd.sql` |
+| Persistência | CRUD das quatro tabelas com SELECT direto no Azure SQL |
+| Acesso do professor | Basic na organização e Project Administrators no projeto |
+
+As políticas são configurações do Azure DevOps e devem ser aplicadas e mostradas na interface. O YAML não impede sozinho push direto ou bypass por administrador. A primeira execução manual pode ser usada no ensaio; o vídeo final deve mostrar CI e Release automáticas após a PR.
+
+## Guias de execução
+
+| Etapa | Guia |
+|---|---|
+| Subir os arquivos no Git | [INICIO-AQUI.md](INICIO-AQUI.md) |
+| Provisionar recursos e preparar a VM | [AZURE-E-VM.md](docs/AZURE-E-VM.md) |
+| Configurar Boards, Repos, políticas e pipelines | [AZURE-DEVOPS.md](docs/AZURE-DEVOPS.md) |
+| Conferir todos os requisitos da disciplina | [REQUISITOS.md](docs/REQUISITOS.md) |
+| Gravar o fluxo e os CRUDs | [ROTEIRO-VIDEO.md](docs/ROTEIRO-VIDEO.md) |
+| Estudar para apresentação presencial | [APRESENTACAO-DEVOPS.md](docs/APRESENTACAO-DEVOPS.md) |
+| Consultar validação já executada | [VALIDACAO.md](docs/VALIDACAO.md) |
+| Usar os endpoints da aplicação | [API.md](docs/API.md) |
+
+## Organização do repositório
 
 ```text
-src/main/java/br/com/minddev/luzvital/  API, domínio, segurança, IA, mensageria
-src/main/resources/                   configuração por ambiente
-src/test/                             testes HTTP/JPA/segurança/Spring AI
-scripts/                              Azure CLI, instalação, DDL e SELECTs
-dockerfiles/                          Dockerfile opcional da API
-postman/                              coleção CRUD + ambiente sem segredos
-docs/                                 arquitetura e guias de entrega
-examples/mobile/                      adaptador TypeScript para integrar no app
-azure-pipeline.yml                    CI
-azure-release.yml                     Release automática por conclusão da CI
-compose.yml                           RabbitMQ local
+azure-pipeline.yml       Pipeline CI: build, testes e artefatos
+azure-release.yml        Pipeline Release: download, deploy e smoke test
+scripts/                 Azure CLI, instalação, DDL e SELECTs
+dockerfiles/             Dockerfile opcional da aplicação
+src/main/                Código-fonte da aplicação Java implantada
+src/test/                Testes automáticos executados na CI
+postman/                 Requisições para demonstrar os CRUDs
+docs/                    Arquitetura, configuração, vídeo e evidências
+compose.yml              Broker para ensaio local
+pom.xml                  Build Maven da aplicação
 ```
 
-## Rodar localmente
+A hospedagem padrão usa JAR em App Service, sem ACR/ACI. O Dockerfile é uma alternativa incluída; não é usado pela Release padrão. O RabbitMQ da VM roda em container e sua criação está em `scripts/04-iniciar-broker-vm.sh`.
 
-Pré-requisitos: JDK 17 e Maven 3.6.3+ (validado com 3.9.9), Docker com Compose para o broker. No Ubuntu VM há script de instalação.
+## CI e Release
 
-```bash
-cp .env.example .env
-# Edite .env: JWT_SECRET (>=32 caracteres), BOOTSTRAP_PASSWORD (10..72), RABBIT_PASSWORD.
-# Gere segredos com: openssl rand -hex 32
-set -a
-source .env
-set +a
-docker compose up -d
-mvn clean verify
-mvn spring-boot:run
-```
+Cadastre duas definições no Azure Pipelines:
 
-Abra `http://localhost:8080/swagger-ui/index.html`. O perfil `local` usa H2 em memória e recria os dados a cada reinício. **Não é o banco da entrega.** Use `prod` com Azure SQL e execute previamente `scripts/script-bd.sql`; o Hibernate só valida o esquema nesse perfil.
-
-O gestor inicial é criado apenas se `BOOTSTRAP_EMAIL` ainda não existir. Alterar `BOOTSTRAP_PASSWORD` depois não redefine a senha do usuário existente. Remova essas configurações de bootstrap do App Service após validar o primeiro acesso. Não há credenciais padrão válidas no código.
-
-## Autenticação e permissões
-
-1. `POST /api/v1/auth/registro`: cria apenas **CUIDADOR** (o papel não é recebido no DTO).
-2. `POST /api/v1/auth/login`: devolve `accessToken`, `tokenType`, `expiresIn` e `papel`.
-3. No Swagger, clique **Authorize** e cole o token puro. Em HTTP, use `Authorization: Bearer TOKEN`.
-4. O gestor pode gerenciar usuários e visualizar todos os registros. O cuidador só acessa pacientes sob sua responsabilidade, incluindo aparelhos e ocorrências.
-
-| Recurso | Cuidador | Gestor |
+| Nome obrigatório | YAML | Disparo |
 |---|---|---|
-| Registro/login e versão | Público | Público |
-| Pacientes/aparelhos | CRUD dos seus pacientes | CRUD geral |
-| Ocorrências | Abrir, listar e consultar as suas | CRUD geral, encerrar e excluir |
-| Fila de prioridade | 403 | Permitido |
-| Plano de contingência | Gerar para seu paciente | Gerar para qualquer paciente |
-| Usuários | 403 | CRUD |
+| `luz-vital-ci` | `/azure-pipeline.yml` | Push da main após merge por PR protegida |
+| `luz-vital-release` | `/azure-release.yml` | Conclusão bem-sucedida da CI na main |
 
-Tokens expiram em 60 minutos, sem refresh token. Alteração de papel, senha ou exclusão não revoga imediatamente JWT já emitido; para invalidação global, rotacione `JWT_SECRET`. Não há recuperação de senha, MFA ou prontidão para produção.
+Crie a conexão Azure Resource Manager `sc-luz-vital`, preferencialmente com identidade federada, e o grupo de variáveis `luz-vital-prod` com `RESOURCE_GROUP` e `WEBAPP`. Autorize as duas definições e os recursos necessários durante o ensaio. Se não houver paralelismo Microsoft-hosted, configure um agente próprio conforme o guia.
 
-## Contrato REST
+CI executa `mvn clean verify`, publica JUnit, JaCoCo e os artefatos. Release baixa o pacote da execução disparadora, implanta o JAR e valida `/actuator/health` e `/api/v1/versao`. A demonstração altera `VersaoController.java`, permitindo comprovar a mudança diretamente na URL pública.
 
-Base: `/api/v1`. As listas recebem `page=0&size=20`, limite 100; retorno `content`, `totalElements`, `totalPages`, `number` e `size`. IDs são gerados pelo banco. Datas ISO-8601 em UTC (`Z`). IDs numéricos e chave idempotente persistidos pelo cliente.
+## Aplicação usada para demonstrar o deploy
 
-| Método e rota | Finalidade |
-|---|---|
-| POST `/auth/registro` | Cadastro CUIDADOR |
-| POST `/auth/login` | JWT |
-| GET/POST `/usuarios` | Lista paginada/cria usuário (gestor) |
-| GET/PUT/DELETE `/usuarios/{id}` | Consulta/atualiza/exclui usuário |
-| GET/POST `/pacientes` | Lista paginada/cria paciente |
-| GET/PUT/DELETE `/pacientes/{id}` | Consulta/atualiza/exclui paciente |
-| POST `/pacientes/{id}/plano` | Gera e persiste plano com Spring AI |
-| GET/POST `/aparelhos` | Lista paginada/cria aparelho |
-| GET/PUT/DELETE `/aparelhos/{id}` | Consulta/atualiza/exclui aparelho |
-| GET/POST `/ocorrencias` | Lista paginada/abre ocorrência |
-| GET/PUT/DELETE `/ocorrencias/{id}` | Consulta/encerra/exclui ocorrência |
-| GET `/ocorrencias/fila` | Prioridade recalculada (gestor) |
-| GET `/versao` | Mensagem pública para simular alteração no vídeo |
-| GET `/actuator/health` | Saúde da aplicação e dependências |
+Java 17, Spring Boot, Maven, JPA, JWT e Swagger. Tabelas: `usuarios`, `pacientes`, `aparelhos` e `ocorrencias`. A API permite demonstrar criação, leitura, atualização e exclusão com relações reais no banco. A aplicação também possui Spring AI e RabbitMQ, mas a apresentação deve concentrar-se na operação da solução e no fluxo DevOps.
 
-### JSONs essenciais
+A chave do LLM e a integração no Mobile **não são necessárias para concluir o roteiro de DevOps**. `AI_ENABLED=false` mantém a funcionalidade de IA explicitamente desativada sem impedir CRUDs, CI ou deploy. O RabbitMQ integra a infraestrutura escolhida e precisa estar acessível para o health check final.
 
-Registro/login:
-```json
-{"nome":"Cuidador fictício","email":"cuidador@example.com","senha":"PREENCHA_UMA_SENHA_FORTE"}
-```
-```json
-{"email":"cuidador@example.com","senha":"PREENCHA_UMA_SENHA_FORTE"}
-```
+- Swagger em nuvem: `https://SEU_WEBAPP.azurewebsites.net/swagger-ui/index.html`.
+- Versão publicada: `https://SEU_WEBAPP.azurewebsites.net/api/v1/versao`.
+- Saúde: `https://SEU_WEBAPP.azurewebsites.net/actuator/health`.
 
-Paciente (`cuidadorId`: ID retornado pelo cadastro, não RM):
-```json
-{"nome":"Paciente fictício","endereco":"Rua de teste 100","telefone":"11999990000","cuidadorId":2}
-```
+Importe [a coleção Postman](postman/Luz-Vital.postman_collection.json) e [o ambiente](postman/Luz-Vital.postman_environment.json). Preencha URL e credenciais sem compartilhar o ambiente preenchido.
 
-Aparelho (`pacienteId`: ID retornado ao criar paciente):
-```json
-{"pacienteId":1,"modelo":"Ventilador de demonstração","tipo":"VENTILADOR","potenciaWatts":100,"autonomiaMinutos":120}
-```
-Tipos: `VENTILADOR`, `CONCENTRADOR`, `BOMBA`, `OUTRO`. Autonomia de 0 a 10080 minutos; potência de 1 a 100000 W.
+## Testes e verificação local
 
-Ocorrência (envie também `Idempotency-Key: UUID_GERADO_NO_CLIENTE`):
-```json
-{"pacienteId":1,"inicio":"2026-11-17T15:00:00Z","observacao":"Falta de energia informada pelo cuidador"}
-```
-Use o instante real declarado da queda, nunca uma data futura. Em reenvios, mantenha **o mesmo corpo e chave**; nova chave para novo pedido. O instante é normalizado a microssegundos, compatível com o banco. Repetição sequencial devolve o mesmo ID; chave com conteúdo diferente gera 409. Concorrência pode retornar 409: o cliente deve consultar e repetir com a mesma chave/corpo. O Azure SQL também impede duas ocorrências abertas para o mesmo paciente via índice filtrado.
-
-Encerrar (gestor):
-```json
-{"status":"ENCERRADA","observacao":"Energia restabelecida; atendimento registrado"}
-```
-Não reabre ocorrência encerrada. Para excluir: encerrar e remover ocorrências → remover aparelhos → remover paciente → remover cuidador. Uma conta não pode excluir a si mesma.
-
-Erros: 400 validação/JSON/cabeçalho; 401 JWT/credenciais; 403 papel ou propriedade; 404 registro; 409 dependência/duplicidade/conflito; 503 LLM indisponível. Exemplo:
-```json
-{"status":400,"codigo":"VALIDACAO","mensagem":"Revise os campos","timestamp":"2026-11-17T15:00:00Z","detalhes":["nome: não deve estar em branco"]}
-```
-Respostas do filtro de segurança usam os campos `status`, `codigo` e `mensagem`; não retornam stack trace ou detalhes internos.
-
-## IA generativa aplicada ao fluxo
-
-`POST /pacientes/{id}/plano` carrega os aparelhos daquele paciente e chama `ChatClient` do Spring AI. O LLM devolve um objeto `Plano` com `primeirasAcoes`, `pedirAjuda`, `preparacao` e `aviso`. O backend valida os campos e limite de tamanho, acrescenta aviso fixo e salva o JSON em `pacientes.plano_contingencia`. `GET /pacientes/{id}` devolve o último plano para o app armazenar offline. O backend não implementa o armazenamento no celular.
-
-Configuração padrão: Gemini via endpoint compatível OpenAI, utilizando **Spring AI**, não uma chamada HTTP artesanal. Configure `AI_API_KEY`, `AI_ENABLED=true` e um `AI_MODEL` disponível para sua chave. Alternativa OpenAI: `AI_BASE_URL=https://api.openai.com`, `AI_COMPLETIONS_PATH=/v1/chat/completions` e modelo compatível com sua conta. Disponibilidade, quota e cobrança dependem do provedor. Nunca compartilhe a chave.
-
-Sem chave/ativação, o endpoint retorna 503; não inventa resposta. Se o provedor falhar ou devolver estrutura inválida, o plano anterior permanece. Os testes usam um servidor LLM simulado e passam pelo `ChatClient` real, sem cobrança. O prompt reduz riscos, mas não garante correção factual: planos precisam de revisão humana.
-
-## Mensageria e consistência
-
-A ocorrência e a flag `eventoPendente=true` são persistidas na mesma transação. A cada 5 segundos o publisher tenta enviar `{"ocorrenciaId":123}` para `luz-vital.eventos`, routing key `energia.caiu`. Após confirmação do broker, limpa a flag. O consumidor assíncrono marca `eventoRecebido=true`; duplicatas não repetem a transição. A fila de erros `luz-vital.erros` recebe mensagens rejeitadas após tentativas.
-
-Entrega **ao menos uma vez**, não exatamente uma. A fila do gestor consulta os dados já persistidos e não fica bloqueada pela indisponibilidade do broker. O evento registra processamento assíncrono para acompanhamento; não envia um chamado real à Defesa Civil. Uma transação concorrente do publisher/consumer pode ser repetida por controle otimista. O broker tem volume persistente na VM.
-
-## Testes e CI/CD
+Pré-requisitos: JDK 17 e Maven 3.6.3+ (validado com 3.9.9).
 
 ```bash
 mvn -B -ntp clean verify
 ```
 
-JUnit em `target/surefire-reports`; cobertura em `target/site/jacoco/index.html`. Testes de integração HTTP/JPA com H2 verificam autenticação, autorização, isolamento, CRUD das quatro tabelas, validação, paginação, dependências, idempotência, fila e falhas da IA. O consumidor tem teste de repetição; o transporte RabbitMQ e Azure SQL devem ser validados na implantação real.
+Foram executados **11 testes, sem falhas ou erros**. A execução usa H2 e um provedor LLM simulado; não exige chave paga nem broker externo. Relatórios JUnit ficam em `target/surefire-reports`; cobertura em `target/site/jacoco/index.html`. Os mesmos testes são executados na CI.
 
-`azure-pipeline.yml`: roda no push da `main`; com políticas obrigatórias isso ocorre após merge por PR. Não possui disparo de PR nem build validation automático. Compila, testa e publica `drop` (JAR + SQL), JUnit e JaCoCo. `azure-release.yml`: outra pipeline, acionada pela conclusão bem-sucedida de `luz-vital-ci`, baixa o **artefato da execução disparadora**, faz deploy e smoke test HTTPS. Não recompila o código na Release.
+Para iniciar a aplicação em ensaio local, preencha o modelo de ambiente, inicie o broker com Compose e siga `INICIO-AQUI.md`. A avaliação final usa os serviços em nuvem.
 
 ## Variáveis e segredos
 
@@ -218,19 +153,26 @@ JUnit em `target/surefire-reports`; cobertura em `target/site/jacoco/index.html`
 
 Arquivos `.env*` locais são ignorados, exceto modelos `.example`. Não filme telas de segredos, tokens completos ou arquivos de ambiente. Dados de saúde são sensíveis; endereços também exigem proteção. Use somente dados fictícios na avaliação. DDL inicial é idempotente, mas não substitui migrações versionadas futuras.
 
-## Links da entrega — preencher depois da implantação
+## Entrega e demonstração
 
-- Organização Azure DevOps: **PENDENTE**
-- Projeto privado Azure DevOps: **PENDENTE**
-- API/Swagger em nuvem: **PENDENTE**
-- Vídeo YouTube: **PENDENTE**
-- App Mobile consumindo esta API: **PENDENTE**
+O vídeo deve ser contínuo, narrado por voz e ter pelo menos 720p. Mostre README/arquitetura, recursos provisionados, tarefa nova, branch, alteração em código-fonte, PR/merge, CI completa, testes/artefatos, Release automática, alteração publicada, CRUDs e SELECTs, e tarefa concluída com vínculos.
 
-## Referências técnicas
+Demonstre as quatro tabelas para cobrir a redação mais exigente do enunciado. Após cada POST, PUT e DELETE, rode `scripts/09-select-banco.sh`. GET demonstra leitura da API; a persistência deve ser comprovada por SELECT no banco remoto.
 
-- [Spring AI e compatibilidade](https://github.com/spring-projects/spring-ai)
-- [Spring AI — OpenAI Chat](https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html)
-- [Gemini — compatibilidade OpenAI](https://ai.google.dev/gemini-api/docs/openai)
-- [Java no App Service](https://learn.microsoft.com/azure/app-service/quickstart-java)
-- [Deploy de JAR](https://learn.microsoft.com/azure/app-service/deploy-zip)
-- [Gatilho entre pipelines](https://learn.microsoft.com/azure/devops/pipelines/process/pipeline-triggers)
+O PDF final deve se chamar `Mind-Dev_rm563489.pdf`, conter grupo/integrantes/RMs, link da organização Azure DevOps e link do vídeo YouTube. A apresentação presencial cobre aplicação funcionando, arquitetura e construção/utilização do Azure DevOps.
+
+## Status e links reais
+
+| Item | Status |
+|---|---|
+| Fontes, scripts, documentação e YAML | Preparados |
+| Build e testes locais | Validados; consulte `docs/VALIDACAO.md` |
+| Organização/projeto Azure DevOps | Pendente de criação/configuração |
+| Recursos Azure | Pendentes de provisionamento na assinatura |
+| Execução CI e Release em Azure DevOps | Pendente de configuração e validação real |
+| Acesso do professor | Pendente de e-mail confirmado e concessão |
+| Organização Azure DevOps | **PREENCHER LINK REAL** |
+| Swagger em nuvem | **PREENCHER LINK REAL** |
+| Vídeo YouTube | **PREENCHER LINK REAL** |
+
+O pacote preparado não comprova sozinho as etapas de nuvem. Nenhum recurso, execução remota ou link de evidência é apresentado como concluído antes de ser validado na conta do aluno.

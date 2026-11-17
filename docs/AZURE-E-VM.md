@@ -125,7 +125,7 @@ No vídeo, o deploy precisa vir da CI/Release automática: configure `docs/AZURE
 1. Login e CRUD com dados fictícios, conforme Postman.
 2. Rode `bash scripts/09-select-banco.sh` **após cada criação, atualização e exclusão** para comprovar banco, além dos GETs.
 3. Verifique `evento_pendente=0` e `evento_recebido=1` após alguns segundos; confira fila/consumidor no RabbitMQ.
-4. Ative `AI_ENABLED=true`, preencha chave/modelo válidos, rode `07` novamente e gere um plano real.
+4. Mantenha `AI_ENABLED=false` para a entrega DevOps se não for demonstrar IA. A ativação com chave/modelo reais é uma integração opcional da aplicação.
 5. Teste outro cuidador: deve receber 403 ao acessar registros de terceiros.
 6. Reinicie o App Service e confirme que os registros continuam no Azure SQL.
 

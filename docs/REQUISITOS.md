@@ -1,16 +1,5 @@
 # Matriz de requisitos e evidências
 
-## Java Advanced
-
-| Requisito | Arquivo/implementação | Validação restante |
-|---|---|---|
-| 3 entidades relacionadas, CRUD/JPA/paginação | Paciente, Aparelho, Ocorrencia; DomainService e controllers | Demonstração em nuvem |
-| DTO/Bean Validation/Advice | Dtos.java, ApiExceptionHandler.java | Testes automáticos incluídos |
-| Security/JWT/2 papéis | SecurityConfig, AuthService e proteção nos controllers | Demonstrar dois logins reais |
-| Spring AI com valor ao cidadão | PlanoService: plano preventivo dos aparelhos do paciente | Chave/modelo e chamada real |
-| RabbitMQ assíncrono | MessagingConfig, EventPublisher e EventConsumer | Validar transporte no broker real |
-| Swagger/README/Mobile | OpenApiConfig, README, docs/MOBILE.md e examples/mobile | Integrar e demonstrar no app do grupo |
-
 ## DevOps
 
 | Requisito | Preparado no pacote | Etapa externa |
@@ -33,4 +22,4 @@
 | CRUD/SELECT todas tabelas | Coleção e scripts SELECT, 4 tabelas | Gravação contínua com SELECTs |
 | PDF e vídeo | Roteiro pronto | Gerar com links reais após execução |
 
-A existência dos arquivos não comprova a conclusão das etapas externas. O app Mobile precisa consumir efetivamente esta API; o adaptador de exemplo não substitui essa evidência. A solução entregue é um protótipo acadêmico com dados fictícios.
+A existência dos arquivos não comprova a conclusão das etapas externas. O foco desta matriz é a disciplina de DevOps; integração Mobile e funcionalidades de IA não são exigências deste roteiro. A solução entregue é um protótipo acadêmico com dados fictícios.

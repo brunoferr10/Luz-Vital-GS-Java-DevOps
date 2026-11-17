@@ -1,4 +1,6 @@
-# Integração React Native / Expo
+# Referência opcional · integração React Native / Expo
+
+Este guia pertence à aplicação de referência. Integração Mobile não é etapa da entrega de DevOps deste repositório.
 
 Use o backend deste repositório como origem única dos cadastros Java. Configure `EXPO_PUBLIC_API_URL=https://SEU_WEBAPP.azurewebsites.net/api/v1`. Não coloque chaves LLM, senhas SQL nem JWT_SECRET no app.
 

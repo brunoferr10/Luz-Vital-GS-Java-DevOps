@@ -4,7 +4,7 @@ Vídeo contínuo, sem cortes, pelo menos 720p, áudio claro, narração por voz.
 
 ## Sequência sugerida
 
-1. **README e proposta.** “Somos o grupo Mind-Dev. O Luz Vital organiza pacientes eletrodependentes em apagões pela autonomia declarada dos aparelhos. Esta entrega hospeda a API Java e o banco na Azure.” Mostre escopo e arquitetura, inclusive IA e RabbitMQ.
+1. **README e proposta.** “Somos o grupo Mind-Dev. O Luz Vital organiza pacientes eletrodependentes em apagões pela autonomia declarada dos aparelhos. Esta entrega hospeda a API Java e o banco na Azure.” Mostre escopo e arquitetura, com foco no caminho Boards → Repos → CI → artefato → Release → nuvem.
 2. **Portal Azure.** Mostre RG, VM de apoio, App Service Plan/Web App, SQL Server/banco. Abra os scripts do repo e relacione os comandos aos recursos. A VM é apoio/broker; app e banco são PaaS.
 3. **Políticas/acesso.** Mostre projeto privado, professor Basic/Project Administrators, main com revisor, Work Item e revisor padrão RM. Não filme dados sensíveis.
 4. **Boards.** Crie uma tarefa nova para a gravação, atribuída a você. Descreva a alteração de mensagem de versão e anote o ID.
@@ -14,7 +14,7 @@ Vídeo contínuo, sem cortes, pelo menos 720p, áudio claro, narração por voz.
 8. **Release completa.** Mostre disparo pela CI, download do artefato correto, deploy e smoke test. Aguarde conclusão. Não dispare manualmente para simular automático.
 9. **Mudança em nuvem.** Abra `/api/v1/versao` HTTPS e comprove a nova mensagem do código. Abra Swagger em nuvem.
 10. **CRUD com persistência.** Use sequência abaixo. Mostre resultado HTTP e `SELECT` no Azure SQL após cada criação, alteração e exclusão. GET sozinho não comprova persistência.
-11. **Extras Java.** Demonstre JWT, 403 cuidador na fila, IA com resposta real, plano salvo, evento consumido e paginação. Não use o teste simulado como evidência de LLM real.
+11. **Operação da infraestrutura.** Mostre o health check e, se necessário, a conectividade do broker. Explique as variáveis de ambiente e a separação entre build e deploy sem exibir segredos. IA/Mobile não são etapas obrigatórias desta gravação de DevOps.
 12. **Tarefa concluída.** Volte ao Boards, confirme links de branch/commit/PR e mova a tarefa para Done/Closed conforme processo. Finalize com app funcionando.
 
 ## CRUD das quatro tabelas

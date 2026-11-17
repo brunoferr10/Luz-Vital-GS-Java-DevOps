@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="740" viewBox="0 0 1200 740">
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#85a9bd" stroke-width="1.5"/></marker></defs>
+<rect width="1200" height="740" rx="20" fill="#0b1726"/>
+<text x="48" y="58" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#f1f5f9">LUZ VITAL</text>
+<text x="48" y="88" font-family="Arial,sans-serif" font-size="16" fill="#9fb6c7">CitizenTech · Mind-Dev · Arquitetura de implantação Java / DevOps</text>
+<rect x="265" y="125" width="875" height="340" rx="18" fill="#11283c" stroke="#315b78"/>
+<text x="290" y="154" font-family="Arial" font-size="16" fill="#7dd3fc">AZURE · RG LUZ VITAL</text>
+<g font-family="Arial,sans-serif" text-anchor="middle">
+<rect x="40" y="225" width="185" height="100" rx="12" fill="#193f50" stroke="#61cab5"/><text x="132" y="264" font-size="20" fill="white">Mobile / Swagger</text><text x="132" y="293" font-size="14" fill="#c6e3e6">Cuidador e gestor</text>
+<rect x="310" y="215" width="245" height="125" rx="12" fill="#164d58" stroke="#64ddc4"/><text x="432" y="250" font-size="20" fill="white">App Service · Java 17</text><text x="432" y="280" font-size="15" fill="#ceeeed">Spring Boot · JWT · JPA</text><text x="432" y="308" font-size="15" fill="#ceeeed">Spring AI · Rabbit listener</text>
+<rect x="690" y="185" width="205" height="95" rx="12" fill="#223c5d" stroke="#77b8f6"/><text x="792" y="222" font-size="20" fill="white">Azure SQL</text><text x="792" y="249" font-size="14" fill="#c7ddef">4 tabelas · persistência</text>
+<rect x="690" y="330" width="390" height="95" rx="12" fill="#223c5d" stroke="#77b8f6"/><text x="885" y="367" font-size="20" fill="white">VM Ubuntu · RabbitMQ</text><text x="885" y="397" font-size="14" fill="#c7ddef">CLI / terminal · fila durável · volume Docker</text>
+<rect x="40" y="373" width="185" height="85" rx="12" fill="#493c55" stroke="#c4a4de"/><text x="132" y="407" font-size="19" fill="white">LLM externo</text><text x="132" y="433" font-size="14" fill="#e0d3ed">Gemini / API compatível</text>
+<rect x="50" y="550" width="260" height="95" rx="12" fill="#243650" stroke="#7699bf"/><text x="180" y="585" font-size="20" fill="white">Boards + Repos</text><text x="180" y="614" font-size="14" fill="#cbd5e1">Tarefa → branch → PR → main</text>
+<rect x="430" y="550" width="260" height="95" rx="12" fill="#243650" stroke="#7699bf"/><text x="560" y="585" font-size="20" fill="white">CI · Azure Pipelines</text><text x="560" y="614" font-size="14" fill="#cbd5e1">Testes · JUnit · JaCoCo · JAR</text>
+<rect x="820" y="550" width="270" height="95" rx="12" fill="#243650" stroke="#7699bf"/><text x="955" y="585" font-size="20" fill="white">Release automática</text><text x="955" y="614" font-size="14" fill="#cbd5e1">Deploy do mesmo JAR + smoke</text>
+</g>
+<g stroke="#85a9bd" stroke-width="2" fill="none" marker-end="url(#arrow)"><path d="M225 270 H308"/><path d="M555 240 H688"/><path d="M555 307 H620 V375 H688"/><path d="M690 401 H600 V330 H557"/><path d="M310 319 L225 396"/><path d="M310 595 H428"/><path d="M690 595 H818"/><path d="M955 550 V490 H432 V342"/></g>
+<g font-family="Arial,sans-serif" font-size="13" fill="#b6d4e2"><text x="230" y="254">HTTPS/JWT</text><text x="585" y="226">JDBC/TLS</text><text x="562" y="296">energia.caiu</text><text x="598" y="442">evento consumido</text><text x="237" y="372">HTTPS</text><text x="335" y="580">merge</text><text x="720" y="580">drop</text><text x="748" y="482">JAR em nuvem</text></g>
+<text x="48" y="699" font-family="Arial,sans-serif" font-size="14" fill="#a8c0d0">Legenda: verde = acesso/API · azul = recursos/pipelines · roxo = IA externa. VM broker: AMQP restrito por NSG, dados fictícios.</text>
+</svg>

@@ -30,3 +30,7 @@ Scripts shell conferidos com `bash -n`. JSON, XML/POM, SVG e YAML analisados sem
 Não houve provisionamento na conta Azure do aluno nem acesso ao seu Azure DevOps. Não foram testados o transporte real RabbitMQ, a chamada real ao Gemini, a execução no app Mobile ou os comandos Azure em uma assinatura. O teste de esquema confere metadados, não substitui `ddl-auto=validate` com Azure SQL conectado. Essas verificações são obrigatórias no ensaio da implantação e vídeo; consulte os guias.
 
 O ZIP contém fontes e configuração, sem diretório `target`, credenciais ou repositório `.git`. Gere o JAR com Maven no seu ambiente ou pela CI. Relatórios JUnit e JaCoCo serão gerados em `target` e publicados pela pipeline.
+
+## Revisão de foco da entrega
+
+Documentação e arquitetura reorganizadas para DevOps Tools & Cloud Computing. Fontes Java, testes, scripts de infraestrutura e YAML de execução foram preservados. A revisão alterou a apresentação do pacote; os 11 testes acima referem-se à mesma aplicação.

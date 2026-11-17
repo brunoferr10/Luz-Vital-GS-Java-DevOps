@@ -1,6 +1,6 @@
-# Primeiro passo · colocar no Git
+# DevOps Tools & Cloud Computing · início da entrega
 
-Este repositório entrega a base Java e DevOps do Luz Vital. Comece pelo Git; VM e nuvem serão configuradas depois. O README descreve precisamente o que está implementado e as integrações pendentes.
+Este repositório é a entrega de **DevOps Tools & Cloud Computing**. A API Java é a aplicação usada para comprovar provisionamento, testes, artefatos e deploy. Comece pelo Git; depois configuraremos VM, serviços Azure, Boards, Repos e Pipelines. O roteiro não exige concluir a disciplina de Java ou o app Mobile.
 
 ## 1. Extrair
 
