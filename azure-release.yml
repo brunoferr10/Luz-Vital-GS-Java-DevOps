@@ -1,0 +1,45 @@
+# Register this SECOND definition with name: luz-vital-release
+trigger: none
+pr: none
+resources:
+  pipelines:
+    - pipeline: ci
+      source: luz-vital-ci
+      trigger:
+        branches:
+          include:
+            - refs/heads/main
+pool:
+  vmImage: ubuntu-latest
+variables:
+  - group: luz-vital-prod
+steps:
+  - checkout: none
+  - download: ci
+    artifact: drop
+  - task: AzureCLI@2
+    displayName: Deploy do mesmo JAR aprovado na CI
+    inputs:
+      azureSubscription: 'sc-luz-vital'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -Eeuo pipefail
+        az webapp deploy --resource-group "$RESOURCE_GROUP" --name "$WEBAPP" --src-path "$(Pipeline.Workspace)/ci/drop/target/luz-vital.jar" --type jar --clean true --output none
+    env:
+      RESOURCE_GROUP: $(RESOURCE_GROUP)
+      WEBAPP: $(WEBAPP)
+  - bash: |
+      set -Eeuo pipefail
+      for attempt in $(seq 1 24); do
+        if curl --fail --silent --max-time 15 "https://${WEBAPP}.azurewebsites.net/actuator/health"; then
+          curl --fail --silent --max-time 15 "https://${WEBAPP}.azurewebsites.net/api/v1/versao"
+          exit 0
+        fi
+        sleep 10
+      done
+      echo 'Health check falhou apos deploy' >&2
+      exit 1
+    displayName: Smoke test HTTPS em nuvem
+    env:
+      WEBAPP: $(WEBAPP)

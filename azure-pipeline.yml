@@ -1,0 +1,50 @@
+# Register this definition in Azure DevOps with exact name: luz-vital-ci
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+pr: none
+pool:
+  vmImage: ubuntu-latest
+variables:
+  MAVEN_OPTS: -Xmx1536m
+steps:
+  - checkout: self
+    clean: true
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '17'
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+  - task: Maven@4
+    displayName: Compilar, testar e empacotar
+    inputs:
+      mavenPomFile: pom.xml
+      goals: clean verify
+      options: -B -ntp
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      javaHomeOption: JDKVersion
+      jdkVersionOption: '1.17'
+  - task: PublishCodeCoverageResults@2
+    condition: succeededOrFailed()
+    inputs:
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/target/site/jacoco/jacoco.xml'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)'
+      Contents: |
+        target/luz-vital.jar
+        scripts/script-bd.sql
+        scripts/select-evidencias.sql
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/drop'
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/drop'
+      artifact: drop
+  - task: PublishPipelineArtifact@1
+    condition: succeededOrFailed()
+    inputs:
+      targetPath: '$(System.DefaultWorkingDirectory)/target/surefire-reports'
+      artifact: testes-junit

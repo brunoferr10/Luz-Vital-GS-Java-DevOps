@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test;MODE=MSSQLServer;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+app:
+  jwt-secret: test-only-secret-with-at-least-32-bytes-12345678
+  messaging-enabled: false
+  ai-enabled: false

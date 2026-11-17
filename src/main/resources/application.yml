@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: luz-vital
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:luzvital;MODE=MSSQLServer;DB_CLOSE_DELAY=-1}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:luzvital}
+    password: ${RABBIT_PASSWORD:}
+    ssl:
+      enabled: ${RABBIT_SSL:false}
+    publisher-confirm-type: correlated
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000ms
+  ai:
+    openai:
+      api-key: ${AI_API_KEY:disabled}
+      base-url: ${AI_BASE_URL:https://generativelanguage.googleapis.com}
+      chat:
+        completions-path: ${AI_COMPLETIONS_PATH:/v1beta/openai/chat/completions}
+        options:
+          model: ${AI_MODEL:gemini-2.5-flash}
+          temperature: 0.2
+    retry:
+      max-attempts: 2
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+app:
+  jwt-secret: ${JWT_SECRET}
+  token-minutes: 60
+  ai-enabled: ${AI_ENABLED:false}
+  messaging-enabled: ${MESSAGING_ENABLED:true}
+  bootstrap:
+    email: ${BOOTSTRAP_EMAIL:}
+    password: ${BOOTSTRAP_PASSWORD:}

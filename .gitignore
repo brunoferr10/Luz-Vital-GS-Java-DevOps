@@ -1,0 +1,13 @@
+target/
+.env
+.env.*
+!.env.example
+!.env.azure.example
+*.log
+*.pem
+*.key
+.idea/
+.vscode/
+.DS_Store
+infra-output.json
+.rabbit.env

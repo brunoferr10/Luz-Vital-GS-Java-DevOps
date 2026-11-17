@@ -1,0 +1,843 @@
+{
+  "info": {
+    "name": "Luz Vital · CRUD em nuvem",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Execute manualmente uma requisição por vez. Após cada POST/PUT/DELETE, rode SELECT no Azure SQL. Configure ambiente e credenciais; não compartilhe ambiente preenchido. Antes de repetir o ciclo, limpe inicio e idempotencyKey. Use IA antes da exclusão dos dados."
+  },
+  "item": [
+    {
+      "name": "CRUD completo · alternar com SELECT no SQL",
+      "item": [
+        {
+          "name": "01 Login gestor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{gestorEmail}}\",\n  \"senha\": \"{{gestorSenha}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('tokenGestor',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 Criar cuidador temporário + SELECT usuarios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cuidador fictício GS\",\n  \"email\": \"{{cuidadorEmail}}\",\n  \"senha\": \"{{cuidadorSenha}}\",\n  \"papel\": \"CUIDADOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('cuidadorId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Consultar usuário",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{cuidadorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 Atualizar usuário + SELECT usuarios",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{cuidadorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Cuidador atualizado GS\",\n  \"email\": \"{{cuidadorEmail}}\",\n  \"senha\": \"{{cuidadorSenha}}\",\n  \"papel\": \"CUIDADOR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 Criar paciente + SELECT pacientes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/pacientes",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Paciente fictício GS\",\n  \"endereco\": \"Rua de demonstração 100\",\n  \"telefone\": \"11999990000\",\n  \"cuidadorId\": \"{{cuidadorId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('pacienteId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Consultar paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/pacientes/{{pacienteId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "07 Atualizar paciente + SELECT pacientes",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/pacientes/{{pacienteId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Paciente atualizado GS\",\n  \"endereco\": \"Rua de demonstração 200\",\n  \"telefone\": \"11999990000\",\n  \"cuidadorId\": \"{{cuidadorId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "08 Criar aparelho + SELECT aparelhos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/aparelhos",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pacienteId\": \"{{pacienteId}}\",\n  \"modelo\": \"Ventilador demonstração\",\n  \"tipo\": \"VENTILADOR\",\n  \"potenciaWatts\": 100,\n  \"autonomiaMinutos\": 120\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('aparelhoId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "09 Consultar aparelho",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/aparelhos/{{aparelhoId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10 Atualizar aparelho + SELECT aparelhos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/aparelhos/{{aparelhoId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pacienteId\": \"{{pacienteId}}\",\n  \"modelo\": \"Ventilador atualizado\",\n  \"tipo\": \"VENTILADOR\",\n  \"potenciaWatts\": 100,\n  \"autonomiaMinutos\": 90\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11 Abrir ocorrência + SELECT ocorrencias",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/ocorrencias",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pacienteId\": \"{{pacienteId}}\",\n  \"inicio\": \"{{inicio}}\",\n  \"observacao\": \"Falta de energia fictícia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('inicio')) pm.environment.set('inicio',new Date().toISOString());",
+                  "if (!pm.environment.get('idempotencyKey')) pm.environment.set('idempotencyKey',pm.variables.replaceIn('{{$guid}}')); "
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('ocorrenciaId',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "12 Reenviar MESMA ocorrência (mesma chave/corpo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/ocorrencias",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pacienteId\": \"{{pacienteId}}\",\n  \"inicio\": \"{{inicio}}\",\n  \"observacao\": \"Falta de energia fictícia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "13 Consultar ocorrência",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ocorrencias/{{ocorrenciaId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "14 Fila do gestor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ocorrencias/fila",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15 Pacientes paginados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/pacientes?page=0&size=5",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "16 Encerrar ocorrência + SELECT ocorrencias",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/ocorrencias/{{ocorrenciaId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ENCERRADA\",\n  \"observacao\": \"Energia restabelecida no teste\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "17 Excluir ocorrência + SELECT ocorrencias",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/ocorrencias/{{ocorrenciaId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "18 Excluir aparelho + SELECT aparelhos",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/aparelhos/{{aparelhoId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "19 Excluir paciente + SELECT pacientes",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/pacientes/{{pacienteId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "20 Excluir cuidador temporário + SELECT usuarios",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{cuidadorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extras · executar com dados ainda cadastrados",
+      "item": [
+        {
+          "name": "Gerar plano (antes de excluir paciente/aparelho; IA ativada)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/pacientes/{{pacienteId}}/plano",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenGestor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Versão pública",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/versao",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login cuidador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{cuidadorEmail}}\",\n  \"senha\": \"{{cuidadorSenha}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP esperado', () => pm.expect(pm.response.code).to.be.oneOf([200,201,204]));",
+                  "if(pm.response.code < 300) pm.environment.set('tokenCuidador',pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
